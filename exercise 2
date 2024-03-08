@@ -1,0 +1,91 @@
+
+import datetime #for the file names when the classes are saved
+
+class PointValidator: # create and name the class
+    def __init__(memory):
+        memory.points_history = [] #variable where data will be saved
+
+    def menu_input(memory): #add class name to all function to be added to the class
+        print("""Please select a command:
+        \n [1] Point Geometry validation 
+        \n [2] Validation history 
+        \n [3] Export history to file
+        \n [4] Import history from file
+        \n [5] Exit""") #same list with added history functions
+        return int(input(": "))
+
+    def inputs(memory): # change to error handling
+        try:
+            lon = float(input("Please enter the longitude: ")) 
+            lat = float(input("Please enter the latitude: "))
+            return lat, lon
+        except ValueError: 
+            print("Latitude and longitude must be numeric values.")
+            return None, None
+
+    def validate_latitude_longitude(memory, lat, lon): #still cant solve print issue
+        if lat == None or lon == None:
+            return False, "Invalid entry!! Latitude and longitude must be provided"
+        elif -90 <= lat <= 90 and -180 <= lon <= 180:
+            return True, "Valid entry"
+        elif -90 > lat or lat > 90: #
+            return False, "Invalid entry!! Incorrect latitude"
+        elif -180 > lon or lon > 180:
+            return False, "Invalid entry!! Incorrect longitude"
+        else:
+            return False, "Invalid entry!! Incorrect longitude and latitude"
+
+    def history_function(memory): 
+        print("\nHistory of Points:")
+        print("Total Points:", len(memory.points_history))
+        for point in memory.points_history: # printing like an array works better for printing
+            print(f"Latitude: {point[0]}, Longitude: {point[1]}, validity: {point[2]}, Reason: {point[3]}")
+
+    def export_history_to_file(memory):  # exporting the history
+        filename = f"point-{datetime.datetime.now().strftime('%Y.%m.%d-%H.%M.%S')}.txt"
+        with open(filename, 'w') as file:
+            for point in memory.points_history:
+                file.write(f"{point[0]},{point[1]},{point[3]}\n")
+        print(f"History exported to file: {filename}")
+
+    def import_history_from_file(memory, filename): #importing the history
+        try:
+            with open(filename, 'r') as file:
+                lines = file.readlines()
+                for line in lines:
+                    parts = line.strip().split(',')
+                    if len(parts) == 3:
+                        memory.points_history.append((float(parts[0]), float(parts[1]), parts[2]))
+                print("History imported successfully.")
+        except FileNotFoundError:
+            print("File not found.")
+        except Exception as e:
+            print(f"An error occurred while importing history: {e}")
+
+    def main(memory):
+        command = 0
+        while command != 5:
+            try:
+                command = memory.menu_input()  # Getting input from the user
+                if command == 1:
+                    lat, lon = memory.inputs()  # Getting latitude and longitude from user
+                    is_valid, reason = memory.validate_latitude_longitude(lat, lon)  # Validating input
+                    memory.points_history.append((lat, lon, is_valid, reason))  # Appending to history
+                    print(reason)  # Printing reason
+                elif command == 2:
+                    memory.history_function()  # Calling history function to display history
+                elif command == 3:
+                    memory.export_history_to_file()  # Exporting history to file
+                elif command == 4:
+                    filename = input("Enter the filename or full path of the file to import: ")
+                    memory.import_history_from_file(filename)  # Importing history from file
+                elif command != 5:
+                    print("Invalid entry, try again")  # Handling invalid commands
+            except ValueError:
+                print("Please use numerical numbering")  # Handling non-numeric input
+        print("Goodbye")  # Exiting loop when command is 5
+
+
+# Initiate the PointValidator class and run main
+pv = PointValidator()
+pv.main()
